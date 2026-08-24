@@ -23,6 +23,10 @@ struct WKWebViewRepresentable: UIViewRepresentable {
     func makeUIView(context: Context) -> WKWebView {
         webView.uiDelegate = context.coordinator
         webView.navigationDelegate = context.coordinator
+      webView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
+      //webView.configuration.preferences.jav
+      webView.isInspectable = true
+    
         
         return webView
     }
