@@ -73,5 +73,11 @@ extension WKWebViewRepresentable {
         
         return nil
     }
+    
+    func webViewDidClose(_ webView: WKWebView) {
+      webViews.forEach { WKWebView in
+        WKWebView.removeFromSuperview()
+      }
+    }
   }
 }
