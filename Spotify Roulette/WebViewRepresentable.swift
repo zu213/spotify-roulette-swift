@@ -54,6 +54,8 @@ extension WKWebViewRepresentable {
     
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
         if navigationAction.targetFrame == nil {
+            configuration.mediaTypesRequiringUserActionForPlayback = []
+            configuration.allowsInlineMediaPlayback = true
             let popupWebView = WKWebView(frame: .zero, configuration: configuration)
             popupWebView.navigationDelegate = self
             popupWebView.uiDelegate = self
