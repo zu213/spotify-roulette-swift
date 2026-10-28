@@ -19,14 +19,18 @@ struct ConnectView: View {
     let response = try await URLSession.shared.data(from: url!)
   }
   
-  func getSpotifyAuthUrl(clientId: String, redirectUri: String) async -> String {
+  func getSpotifyAuthUrl(clientId: String, redirectUri: String) async -> String? {
     var verifier = generateRandomString(length: 64)
     //window.localStorage.setItem('code_verifier', verifier)
-    const challenge = await generateCodeChallenge(verifier)
-    
-    var params = "client_id=\(clientId)&response_type=code&redirect_uri=\(redirectUri)&scope=user-top-read&state=spotify-login&code_challenge_method=S256&code_challenge=\(challenge)"
-
-    return "https://accounts.spotify.com/authorize?\(params)"
+    do {
+      if let challenge = await generateCodeChallenge(verifier: verifier) {
+        
+        var params = "client_id=\(clientId)&response_type=code&redirect_uri=\(redirectUri)&scope=user-top-read&state=spotify-login&code_challenge_method=S256&code_challenge=\(challenge)"
+        
+        return "https://accounts.spotify.com/authorize?\(params)"
+      }
+    }
+    return nil
   }
   
   func generateRandomString(length: Int) -> String {
@@ -38,19 +42,15 @@ struct ConnectView: View {
     return output
   }
   
-  func generateCodeChallenge(verifier: String) async {
-    let digest = sha256(string: verifier)
+  func generateCodeChallenge(verifier: String) async -> String? {
+    guard let data = verifier.data(using: .utf8) else { return nil }
+    let hashed = SHA256.hash(data: data)
+    let base64String = Data(hashed).base64EncodedString()
     
-    return btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '')
-  }
-  
-  func sha256(string: String) -> String? {
-      guard let data = string.data(using: .utf8) else { return nil }
-      let hashed = SHA256.hash(data: data)
-      return hashed.compactMap { String(format: "%02x", $0) }.joined()
+    return base64String
+      .replacing("+", with: "-")
+      .replacing("/", with: "_")
+      .replacing(/=+$/, with: "")
   }
 
   var body: some View {
