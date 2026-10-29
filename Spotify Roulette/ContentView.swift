@@ -10,10 +10,13 @@ import SwiftData
 import WebKit
 
 struct ContentView: View {
+  
+  
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
-      WKWebViewRepresentable(url: URL(string: "https://zupstn.com/#/spotify-roulette-demo")!)
+      // Keeping for now incase i move to tab view
+      GameView()
     }
 }
 

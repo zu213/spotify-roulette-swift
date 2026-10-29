@@ -10,26 +10,25 @@ import SwiftData
 
 @main
 struct Spotify_RouletteApp: App {
-
   
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+  private let deps = AppDependencies()
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+  var sharedModelContainer: ModelContainer = {
+    let schema = Schema([])
+    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
-    var body: some Scene {
-        WindowGroup {
-          ZStack {
-            Color.black.ignoresSafeArea()
-            ContentView()
-          }
-        }
-        .modelContainer(sharedModelContainer)
+    do {
+      return try ModelContainer(for: schema, configurations: [modelConfiguration])
+    } catch {
+      fatalError("Could not create ModelContainer: \(error)")
     }
+  }()
+
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
+        .environment(\.deps, deps)
+    }
+    .modelContainer(sharedModelContainer)
+  }
 }
