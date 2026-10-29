@@ -8,17 +8,19 @@
 import SwiftUI
 
 nonisolated final class AppDependencies: Sendable {
-    let connectRepo: SpotifyConnectRepository
-    let tokenStore: TokenStore
+  static let live = AppDependencies()
+  
+  let connectRepo: SpotifyConnectRepository
+  let tokenStore: TokenStore
 //    let api: SpotifyAPIRepository
 
-    init() {
-      connectRepo = SpotifyConnectRepository()
-      tokenStore = TokenStore(connectRepo: connectRepo)
+  init() {
+    connectRepo = SpotifyConnectRepository()
+    tokenStore = TokenStore()
 //        api = SpotifyAPIRepository(tokens: tokens)
-    }
+  }
 }
 
 extension EnvironmentValues {
-    @Entry var deps: AppDependencies = AppDependencies()
+  @Entry var deps: AppDependencies = .live
 }

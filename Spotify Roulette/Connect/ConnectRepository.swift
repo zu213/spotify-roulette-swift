@@ -21,7 +21,7 @@ enum SpotifyConnectError: Error {
     case runtimeError(String)
 }
 
-struct SpotifyConnectRepository: ConnectRepository {
+nonisolated struct SpotifyConnectRepository: ConnectRepository {
   let REDIRECT_URI = AppConfig.redirectUrl
   let CLIENT_ID = AppConfig.spotifyClientId
   

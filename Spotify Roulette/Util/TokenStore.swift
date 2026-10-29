@@ -15,12 +15,9 @@ enum AuthError: Error {
 actor TokenStore {
   private let key = "spotify.tokens"
   private var cached: StoredTokens?
-  private let connectRepo: ConnectRepository
   
   let REDIRECT_URI = AppConfig.redirectUrl
   let CLIENT_ID = AppConfig.spotifyClientId
-
-  init(connectRepo: ConnectRepository) { self.connectRepo = connectRepo }
 
   func save(_ tokens: StoredTokens) {
     cached = tokens
@@ -39,7 +36,14 @@ actor TokenStore {
       return refreshed.accessToken
     }
     return tokens.accessToken
+  }
+  
+  func hasAccessToken() -> Bool {
+    if cached == nil, let data = Keychain.load(key: key) {
+        cached = try? JSONDecoder().decode(StoredTokens.self, from: data)
     }
+    return cached != nil
+  }
 
   func clear() {
     cached = nil

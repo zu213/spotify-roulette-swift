@@ -10,14 +10,12 @@ import SwiftData
 import WebKit
 
 struct ContentView: View {
-  
-  
-    @Environment(\.modelContext) private var modelContext
+  @Environment(\.deps) private var deps
 
-    var body: some View {
-      // Keeping for now incase i move to tab view
-      GameView()
-    }
+  var body: some View {
+    // Keeping for now incase i move to tab view
+    GameView(tokenStore: deps.tokenStore)
+  }
 }
 
 #Preview {

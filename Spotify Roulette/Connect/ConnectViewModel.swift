@@ -8,8 +8,9 @@
 import Combine
 import Foundation
 
+@Observable
 @MainActor
-final class ConnectViewModel: ObservableObject {
+final class ConnectViewModel {
   private let connectRepo: ConnectRepository
   private let tokenStore: TokenStore
   private var verifier: String?
@@ -39,7 +40,8 @@ final class ConnectViewModel: ObservableObject {
     guard items?.first(where: { $0.name == "state" })?.value == "spotify-login",
           let code = items?.first(where: { $0.name == "code" })?.value,
           let verifier = verifier else { return }
-
+    isLoading = true
+    defer { isLoading = false }
     try? await tokenStore.exchangeCode(code: code, verifier: verifier)
   }
   

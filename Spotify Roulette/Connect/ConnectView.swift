@@ -51,6 +51,6 @@ struct ConnectView: View {
 
 #Preview {
   let connectRepo = SpotifyConnectRepository()
-  let tokenStore = TokenStore(connectRepo: connectRepo)
+  let tokenStore = TokenStore()
   ConnectView(connectRepo: connectRepo, tokenStore: tokenStore)
 }
