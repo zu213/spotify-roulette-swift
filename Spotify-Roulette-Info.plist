@@ -6,5 +6,7 @@
 	<string>$(REDIRECT_URI)</string>
 	<key>SPOTIFY_CLIENT_ID</key>
 	<string>$(SPOTIFY_CLIENT_ID)</string>
+	<key>REACT_APP_SERVER_URL</key>
+	<string>$(REACT_APP_SERVER_URL)</string>
 </dict>
 </plist>

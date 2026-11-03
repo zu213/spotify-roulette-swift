@@ -14,8 +14,11 @@ struct ConnectView: View {
   @State private var connectViewModel: ConnectViewModel
   @State var isBuildingConnection = false
   
-  init(connectRepo: ConnectRepository, tokenStore: TokenStore) {
+  private var loadHasTokens: () async -> Void
+  
+  init(connectRepo: ConnectRepository, tokenStore: TokenStore, loadHasTokens: @escaping () async -> Void) {
     _connectViewModel = State(initialValue: ConnectViewModel(connectRepo: connectRepo, tokenStore: tokenStore))
+    self.loadHasTokens = loadHasTokens
   }
   
   var body: some View {
@@ -52,5 +55,5 @@ struct ConnectView: View {
 #Preview {
   let connectRepo = SpotifyConnectRepository()
   let tokenStore = TokenStore()
-  ConnectView(connectRepo: connectRepo, tokenStore: tokenStore)
+  ConnectView(connectRepo: connectRepo, tokenStore: tokenStore, loadHasTokens: {})
 }

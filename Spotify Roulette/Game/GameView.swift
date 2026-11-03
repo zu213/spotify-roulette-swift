@@ -13,17 +13,21 @@ struct GameView: View {
   
   @State private var gameViewModel: GameViewModel
   
-  init(tokenStore: TokenStore) {
-    _gameViewModel = State(initialValue: GameViewModel(tokenStore: tokenStore))
+  init(tokenStore: TokenStore, bridge: Bridge) {
+    _gameViewModel = State(initialValue: GameViewModel(tokenStore: tokenStore, bridge: bridge))
   }
     
   var body: some View {
     Group {
       if let hasTokens = gameViewModel.hasTokens {
         if hasTokens {
-          Text("has tokens")
+          if let tableId = gameViewModel.tableId {
+            LobbyView(tableId: tableId, startGame: gameViewModel.startGame)
+          } else {
+            JoinView(joinTable: gameViewModel.joinTable, createTable: gameViewModel.createTable)
+          }
         } else {
-          ConnectView(connectRepo: deps.connectRepo, tokenStore: deps.tokenStore)
+          ConnectView(connectRepo: deps.connectRepo, tokenStore: deps.tokenStore, loadHasTokens: gameViewModel.loadHasTokens)
         }
       }
       else {
@@ -38,5 +42,6 @@ struct GameView: View {
 #Preview {
   //let viewModel = ConnectViewModel(repo: repo)
   let tokenStore = TokenStore()
-  GameView(tokenStore: tokenStore)
+  let bridge = Bridge(tokenStore: tokenStore)
+  GameView(tokenStore: tokenStore, bridge: bridge)
 }

@@ -9,6 +9,7 @@ import Foundation
 
 enum AuthError: Error {
   case notLoggedIn
+  case noRefreshToken
 }
 
 
@@ -68,26 +69,37 @@ actor TokenStore {
     let (data, _) = try await URLSession.shared.data(for: request)
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+    let decodedResponse = try decoder.decode(Token.self, from: data)
+    guard let refresh = decodedResponse.refreshToken else { throw AuthError.noRefreshToken }
+    
+    let storableTokens = StoredTokens(accessToken: decodedResponse.accessToken, refreshToken: refresh, expiresAt: Date.now + TimeInterval(decodedResponse.expiresIn))
+    save(storableTokens)
+  }
+  
+  func refresh(refreshToken: String) async throws -> StoredTokens {
+    var request = URLRequest(url: URL(string: "https://accounts.spotify.com/api/token")!)
+    request.httpMethod = "POST"
+    request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+    var body = URLComponents()
+    body.queryItems = [
+      URLQueryItem(name: "grant_type", value: "authorization_code"),
+      URLQueryItem(name: "refresh_token", value: refreshToken),
+      URLQueryItem(name: "client_id", value: CLIENT_ID),
+    ]
+    request.httpBody = body.percentEncodedQuery?.data(using: .utf8)
+
+    let (data, _) = try await URLSession.shared.data(for: request)
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
     
     print(String(data: data, encoding: .utf8)!)
     
     let decodedResponse = try decoder.decode(Token.self, from: data)
     print(decodedResponse)
     
-    let storableTokens = StoredTokens(accessToken: decodedResponse.accessToken, refreshToken: decodedResponse.refreshToken, expiresAt: Date.now + TimeInterval(decodedResponse.expiresIn))
-    save(storableTokens)
+    let storableTokens = StoredTokens(accessToken: decodedResponse.accessToken, refreshToken: refreshToken, expiresAt: Date.now + TimeInterval(decodedResponse.expiresIn))
+    return storableTokens
   }
-  
-  func refresh(refreshToken: String) async throws -> StoredTokens {
-    // TODO
-    return StoredTokens(accessToken: "", refreshToken: "", expiresAt: Date.now)
-  }
-}
-
-nonisolated struct Token: Decodable {
-  let accessToken: String
-  let tokenType: String
-  let expiresIn: Int
-  let refreshToken: String
-  let scope: String
 }

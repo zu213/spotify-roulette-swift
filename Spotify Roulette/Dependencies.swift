@@ -12,12 +12,12 @@ nonisolated final class AppDependencies: Sendable {
   
   let connectRepo: SpotifyConnectRepository
   let tokenStore: TokenStore
-//    let api: SpotifyAPIRepository
+  let bridge: Bridge
 
   init() {
     connectRepo = SpotifyConnectRepository()
     tokenStore = TokenStore()
-//        api = SpotifyAPIRepository(tokens: tokens)
+    bridge = Bridge(tokenStore: tokenStore)
   }
 }
 
