@@ -44,7 +44,7 @@ enum WebSocketResponse: Decodable {
 
 struct StartRoundResponse: Decodable {
   let type: WebSocketResponseType
-  let playerName: String
+  let song: Song
 }
 
 struct PongResponse: Decodable {
@@ -54,13 +54,15 @@ struct PongResponse: Decodable {
 struct TableInfoResponse: Decodable {
   let type: WebSocketResponseType
   let players: [Player]
-  let scores: [Score]
+  var scores: [Score]
   let tableCode: Int
 
 }
 
 struct ShowLeaderboardResponse: Decodable {
   let type: WebSocketResponseType
+  let scores: [Score]
+  let answer: Player
 }
 
 struct NoTableResponse: Decodable {
@@ -75,4 +77,14 @@ struct Player: Decodable {
 struct Score: Decodable {
   let playerName: String
   let score: Int
+}
+
+struct Song: Decodable {
+  let id: String
+  let name: String
+  let artists: [Artist]
+}
+
+struct Artist: Decodable {
+  let name: String
 }

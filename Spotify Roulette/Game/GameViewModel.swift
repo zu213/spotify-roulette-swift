@@ -23,7 +23,15 @@ final class GameViewModel {
   
   // Table related
   var tableInfo: TableInfoResponse?
+  var answer: Player?
   
+  // Game related
+  var gameInPlay: Bool?
+  var gameInfo: StartRoundResponse?
+  var roundInPlay: Bool?
+  var roundStart: Date?
+  
+  // Websocket
   var webSocketConnection: WebSocketConnection?
   let WEBSOCKET_BASE_URL = AppConfig.serverUrl
   
@@ -69,21 +77,67 @@ final class GameViewModel {
   }
   
   func startGame() async {
-    webSocketConnection
+    gameInPlay = true
+    await startRound()
   }
   
+  func startRound() async {
+    roundInPlay = true
+    webSocketConnection?.startRound()
+  }
+  
+  func makeGuess(playerId: String?, timeGuessed: Date) async {
+    guard let roundStart else { return }
+    let timeLeft = max(30 - Int(timeGuessed.timeIntervalSince(roundStart).rounded()), 0)
+    webSocketConnection?.makeGuess(playerId: playerId, timeLeft: timeLeft)
+  }
+  
+  func kickPlayerOutOfTable() {
+    gameInPlay = nil
+    roundInPlay = nil
+    tableInfo = nil
+    answer = nil
+    roundStart = nil
+    gameInfo = nil
+    webSocketConnection?.disconnect()
+    webSocketConnection = nil
+  }
+  
+  func logout() {
+    kickPlayerOutOfTable()
+    hasTokens = nil
+    Task {
+      await tokenStore.clear()
+    }
+  }
+
   func decodeMessage(wsr: WebSocketResponse) {
     switch wsr {
-    case .startRound(let r):
+    case .startRound(let roundMessage):
+      gameInfo = roundMessage
+      roundInPlay = true
+      roundStart = .now
+      Task {
+         do {
+           try await Task.sleep(for: .seconds(30))
+           await makeGuess(playerId: nil, timeGuessed: .now)
+         } catch {
+         }
+       }
       break
       // handle
     case .tableInfo(let tableInfo):
       print(tableInfo)
       self.tableInfo = tableInfo
+      
       break
-    case .showLeaderboard(let s):
+    case .showLeaderboard(let leaderboardInfo):
+      roundInPlay = false
+      tableInfo?.scores = leaderboardInfo.scores
+      answer = leaderboardInfo.answer
       break
-    case .noTable(let n):
+    case .noTable(let noTable):
+      kickPlayerOutOfTable()
       break
     case .pong:
       break

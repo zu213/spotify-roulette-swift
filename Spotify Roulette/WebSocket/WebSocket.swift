@@ -71,9 +71,9 @@ final class WebSocketConnection {
   
   func decodeMessage(data: Data) throws {
     let envelope = try JSONDecoder().decode(Envelope.self, from: data)
-    if let type = envelope.type {
+    if let _ = envelope.type {
       let response = try JSONDecoder().decode(WebSocketResponse.self, from: data)
-      try? onMessage(response)
+      onMessage(response)
     } else if let error = envelope.error{
       print(error)
     } else {
@@ -84,18 +84,6 @@ final class WebSocketConnection {
   func disconnect() {
     task?.cancel(with: .normalClosure, reason: nil)
     task = nil
-  }
-  
-  private func sendTracks() throws {
-    guard let task, let playerName, let topTracks else { return }
-    
-    let str = SubmitTracksRequest(playerName: playerName, tracks: topTracks)
-    let data = try JSONEncoder().encode(str)
-    let json = String(decoding: data, as: UTF8.self)
-
-    task.send(.string(json)) { error in
-      if let error { print("ws send failed:", error) }
-    }
   }
   
   private func sendHeartbeat() throws {
@@ -111,6 +99,45 @@ final class WebSocketConnection {
     
     DispatchQueue.global().asyncAfter(deadline: .now() + 15) {
       try? self.sendHeartbeat()
+    }
+  }
+  
+  private func sendTracks() throws {
+    guard let task, let playerName, let topTracks else { return }
+    
+    let tracks = try JSONDecoder().decode(SpotifyTopTracks.self, from: topTracks)
+    let str = SubmitTracksRequest(playerName: playerName, tracks: tracks.items)
+    let data = try JSONEncoder().encode(str)
+    let json = String(decoding: data, as: UTF8.self)
+
+    task.send(.string(json)) { error in
+      if let error { print("ws send failed:", error) }
+    }
+  }
+  
+  func startRound() {
+    guard let task else { return }
+    
+    let str = StartRoundRequest()
+    if let data = try? JSONEncoder().encode(str) {
+      let json = String(decoding: data, as: UTF8.self)
+      
+      task.send(.string(json)) { error in
+        if let error { print("ws send failed:", error) }
+      }
+    }
+  }
+  
+  func makeGuess(playerId: String?, timeLeft: Int) {
+    guard let task else { return }
+    
+    let str = GuessMadeRequest(playerId: playerId ?? "", timeLeft: timeLeft)
+    if let data = try? JSONEncoder().encode(str) {
+      let json = String(decoding: data, as: UTF8.self)
+      
+      task.send(.string(json)) { error in
+        if let error { print("ws send failed:", error) }
+      }
     }
   }
 }

@@ -2,46 +2,45 @@
 //  GameView.swift
 //  Spotify Roulette
 //
-//  Created by Zachary Upstone on 29/10/2026.
+//  Created by Zachary Upstone on 05/11/2026.
 //
 
 import SwiftUI
 
 struct GameView: View {
   //let connectViewModel: ConnectViewModel
-  @Environment(\.deps) private var deps
+  let players: [Player]
+  let makeGuess: (String, Date) async -> Void
+  let roundInfo: StartRoundResponse?
+  let roundStartTime: Date?
+  let gameDuration = 30
   
-  @State private var gameViewModel: GameViewModel
-  
-  init(tokenStore: TokenStore, bridge: Bridge) {
-    _gameViewModel = State(initialValue: GameViewModel(tokenStore: tokenStore, bridge: bridge))
-  }
+  @State var isLoading = false
     
   var body: some View {
-    Group {
-      if let hasTokens = gameViewModel.hasTokens {
-        if hasTokens {
-          if let tableInfo = gameViewModel.tableInfo {
-            LobbyView(tableInfo: tableInfo, startGame: gameViewModel.startGame)
-          } else {
-            JoinView(joinTable: gameViewModel.joinTable, createTable: gameViewModel.createTable)
-          }
-        } else {
-          ConnectView(connectRepo: deps.connectRepo, tokenStore: deps.tokenStore, loadHasTokens: gameViewModel.loadHasTokens)
+    Text("Game")
+    
+    if let roundInfo, let roundStartTime {
+      TimelineView(.periodic(from: roundStartTime, by: 1)) { context in
+        let remaining = max(0, gameDuration - Int(context.date.timeIntervalSince(roundStartTime)))
+        Text("\(remaining)")
+          .font(.largeTitle.monospacedDigit())
+      }
+      Text("song: \(roundInfo.song)")
+      
+      ForEach(players, id: \.id) { player in
+        Button(player.playerName) {
+          Task { await makeGuess(player.id, .now) }
         }
       }
-      else {
-        ProgressView()
-      }
+      
+    } else {
+      Text("loading")
     }
-    .task { await gameViewModel.loadHasTokens() }
   }
   
 }
 
 #Preview {
-  //let viewModel = ConnectViewModel(repo: repo)
-  let tokenStore = TokenStore()
-  let bridge = Bridge(tokenStore: tokenStore)
-  GameView(tokenStore: tokenStore, bridge: bridge)
+  //JoinView()
 }

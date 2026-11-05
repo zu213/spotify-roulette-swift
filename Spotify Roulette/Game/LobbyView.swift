@@ -13,18 +13,26 @@ struct LobbyView: View {
   
   let tableInfo: TableInfoResponse
   let startGame: () async -> Void
+  
+  @State var isLoading = false
       
   var body: some View {
     VStack {
       Text("Table code \(tableInfo.tableCode)")
       
+      Text("Players")
       ForEach(Array(tableInfo.players.enumerated()), id: \.element.id) { i, player in
         Text("\(i + 1). \(player.playerName)")
       }
       
-      ForEach(Array(tableInfo.scores.enumerated()), id: \.offset) { i, score in
-        Text("\(score.playerName): \(score.score)")
+      Button("Start Game") {
+        Task {
+          isLoading = true
+          defer { isLoading = false }
+          await startGame()
+        }
       }
+      .disabled(isLoading)
     }
   }
   

@@ -14,7 +14,7 @@ struct ContentView: View {
 
   var body: some View {
     // Keeping for now incase i move to tab view
-    GameView(tokenStore: deps.tokenStore, bridge: deps.bridge)
+    GameControllerView(tokenStore: deps.tokenStore, bridge: deps.bridge)
   }
 }
 

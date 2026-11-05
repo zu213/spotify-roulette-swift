@@ -17,7 +17,7 @@ enum WebSocketRequest: String, Encodable {
 struct SubmitTracksRequest: Encodable {
   let type = WebSocketRequest.submit_tracks
   let playerName: String
-  let tracks: Data
+  let tracks: [SpotifyTrack]
 }
 
 struct PingRequest: Encodable {
@@ -25,9 +25,25 @@ struct PingRequest: Encodable {
 }
 
 struct StartRoundRequest: Encodable {
-  let type = WebSocketRequest.submit_tracks
+  let type = WebSocketRequest.start_round
 }
 
 struct GuessMadeRequest: Encodable {
   let type = WebSocketRequest.guess_made
+  let playerId: String
+  let timeLeft: Int
+}
+
+struct SpotifyTrack: Codable {
+  let id: String
+  let name: String
+  let album: Album
+  let artists: [Artist]
+  struct Album: Codable { let name: String; let images: [Image] }
+  struct Image: Codable { let url: String }
+  struct Artist: Codable { let name: String }
+}
+
+struct SpotifyTopTracks: Codable {
+  let items: [SpotifyTrack]
 }
