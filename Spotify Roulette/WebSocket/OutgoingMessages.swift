@@ -7,9 +7,27 @@
 
 import Foundation
 
-enum OutgoingMessage: Decodable {
-  case items(items: [String])
-  case update(item: String)
-  case add(item: String)
-  case delete(item: String)
+enum WebSocketRequest: String, Encodable {
+  case submit_tracks
+  case start_round
+  case ping
+  case guess_made
+}
+
+struct SubmitTracksRequest: Encodable {
+  let type = WebSocketRequest.submit_tracks
+  let playerName: String
+  let tracks: Data
+}
+
+struct PingRequest: Encodable {
+  let type = WebSocketRequest.ping
+}
+
+struct StartRoundRequest: Encodable {
+  let type = WebSocketRequest.submit_tracks
+}
+
+struct GuessMadeRequest: Encodable {
+  let type = WebSocketRequest.guess_made
 }

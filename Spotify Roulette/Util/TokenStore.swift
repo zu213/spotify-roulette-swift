@@ -84,7 +84,7 @@ actor TokenStore {
 
     var body = URLComponents()
     body.queryItems = [
-      URLQueryItem(name: "grant_type", value: "authorization_code"),
+      URLQueryItem(name: "grant_type", value: "refresh_token"),
       URLQueryItem(name: "refresh_token", value: refreshToken),
       URLQueryItem(name: "client_id", value: CLIENT_ID),
     ]

@@ -11,12 +11,20 @@ struct LobbyView: View {
   //let connectViewModel: ConnectViewModel
   @Environment(\.deps) private var deps
   
-  let tableId: Int
+  let tableInfo: TableInfoResponse
   let startGame: () async -> Void
       
   var body: some View {
     VStack {
-      Text("aaaa")
+      Text("Table code \(tableInfo.tableCode)")
+      
+      ForEach(Array(tableInfo.players.enumerated()), id: \.element.id) { i, player in
+        Text("\(i + 1). \(player.playerName)")
+      }
+      
+      ForEach(Array(tableInfo.scores.enumerated()), id: \.offset) { i, score in
+        Text("\(score.playerName): \(score.score)")
+      }
     }
   }
   
@@ -24,5 +32,6 @@ struct LobbyView: View {
 
 #Preview {
   let a = {}
-  LobbyView(tableId: 1, startGame: a)
+  let tableInfo = TableInfoResponse(type: .table_info, players: [], scores: [], tableCode: 100)
+  LobbyView(tableInfo: tableInfo, startGame: a)
 }

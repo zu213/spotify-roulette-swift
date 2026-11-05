@@ -16,11 +16,15 @@ final class GameViewModel {
   
   var isLoading = false
   var errorMessage: String?
+  
+  // user related
   var hasTokens: Bool?
-  var tableId: Int?
   var topTracks: Data?
   
-  var webSocketConnection = WebSocket()
+  // Table related
+  var tableInfo: TableInfoResponse?
+  
+  var webSocketConnection: WebSocketConnection?
   let WEBSOCKET_BASE_URL = AppConfig.serverUrl
   
   init(tokenStore: TokenStore, bridge: Bridge) {
@@ -37,7 +41,7 @@ final class GameViewModel {
   }
   
   func requestTopTracks() async {
-    guard let hasTokens, topTracks == nil else { return }
+    guard let _ =  hasTokens, topTracks == nil else { return }
     topTracks = await bridge.requestTopTracks()
   }
   
@@ -48,7 +52,8 @@ final class GameViewModel {
     let url = WEBSOCKET_BASE_URL.appending(queryItems: [
       URLQueryItem(name: "playername", value: name)
     ])
-    webSocketConnection.connect(to: url)
+    webSocketConnection = WebSocketConnection(url: url, topTracks: topTracks, playerName: name, onMessage: decodeMessage)
+    webSocketConnection?.connect()
   }
   
   func joinTable(name: String, code: Int) async {
@@ -59,10 +64,29 @@ final class GameViewModel {
       URLQueryItem(name: "playername", value: name),
       URLQueryItem(name: "tableid", value: String(code))
     ])
-    webSocketConnection.connect(to: url)
+    webSocketConnection = WebSocketConnection(url: url, topTracks: topTracks, playerName: name, onMessage: decodeMessage)
+    webSocketConnection?.connect()
   }
   
   func startGame() async {
-    
+    webSocketConnection
+  }
+  
+  func decodeMessage(wsr: WebSocketResponse) {
+    switch wsr {
+    case .startRound(let r):
+      break
+      // handle
+    case .tableInfo(let tableInfo):
+      print(tableInfo)
+      self.tableInfo = tableInfo
+      break
+    case .showLeaderboard(let s):
+      break
+    case .noTable(let n):
+      break
+    case .pong:
+      break
+    }
   }
 }

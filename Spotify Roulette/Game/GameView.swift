@@ -21,8 +21,8 @@ struct GameView: View {
     Group {
       if let hasTokens = gameViewModel.hasTokens {
         if hasTokens {
-          if let tableId = gameViewModel.tableId {
-            LobbyView(tableId: tableId, startGame: gameViewModel.startGame)
+          if let tableInfo = gameViewModel.tableInfo {
+            LobbyView(tableInfo: tableInfo, startGame: gameViewModel.startGame)
           } else {
             JoinView(joinTable: gameViewModel.joinTable, createTable: gameViewModel.createTable)
           }
