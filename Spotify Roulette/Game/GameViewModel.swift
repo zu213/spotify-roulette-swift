@@ -7,6 +7,7 @@
 
 import Combine
 import Foundation
+import AVFoundation
 
 @Observable
 @MainActor
@@ -90,9 +91,26 @@ final class GameViewModel {
     guard let roundStart else { return }
     let timeLeft = max(30 - Int(timeGuessed.timeIntervalSince(roundStart).rounded()), 0)
     webSocketConnection?.makeGuess(playerId: playerId, timeLeft: timeLeft)
+    audioPlayer?.pause()
+    audioPlayer = nil
+  }
+  
+  var audioPlayer: AVPlayer?
+  
+  func playSong() async {
+    guard let song = gameInfo?.song, let artist = song.artists.first else { return }
+    if let songUrl = try? await bridge.playAudioPreviewFromiTunes(songName: song.name, artistName: artist.name) {
+      
+      DispatchQueue.main.async {
+        self.audioPlayer = AVPlayer(url: songUrl)
+        self.audioPlayer?.play()
+      }
+    }
   }
   
   func kickPlayerOutOfTable() {
+    audioPlayer?.pause()
+    audioPlayer = nil
     gameInPlay = nil
     roundInPlay = nil
     tableInfo = nil
@@ -105,9 +123,9 @@ final class GameViewModel {
   
   func logout() {
     kickPlayerOutOfTable()
-    hasTokens = nil
     Task {
       await tokenStore.clear()
+      hasTokens = false
     }
   }
 
@@ -119,6 +137,7 @@ final class GameViewModel {
       roundStart = .now
       Task {
          do {
+           await playSong()
            try await Task.sleep(for: .seconds(30))
            await makeGuess(playerId: nil, timeGuessed: .now)
          } catch {
@@ -143,4 +162,6 @@ final class GameViewModel {
       break
     }
   }
+  
+  
 }

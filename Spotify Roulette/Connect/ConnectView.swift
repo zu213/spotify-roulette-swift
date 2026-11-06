@@ -34,7 +34,7 @@ struct ConnectView: View {
                   callbackURLScheme: "com.zachupstone.spotify-roulette"
               )
               await connectViewModel.handleSpotifyLoginCallback(url: callbackURL)
-              
+              await loadHasTokens()
             } catch {
               
             }
@@ -43,11 +43,9 @@ struct ConnectView: View {
       }
       .disabled(connectViewModel.isLoading)
     }
-    
     if(connectViewModel.isLoading) {
       ProgressView()
     }
-    
   }
   
 }

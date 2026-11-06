@@ -20,10 +20,10 @@ struct GameControllerView: View {
   var body: some View {
     Group {
       if let hasTokens = gameViewModel.hasTokens {
-        Button("Logout") {
-          gameViewModel.logout()
-        }
         if hasTokens {
+          Button("Logout") {
+            gameViewModel.logout()
+          }
           if let tableInfo = gameViewModel.tableInfo {
             Button("Exit Table") {
               gameViewModel.kickPlayerOutOfTable()
