@@ -18,6 +18,7 @@ final class WebSocketConnection {
   private var playerName: String?
   private var url: URL
   private var onMessage: ((WebSocketResponse) -> Void)
+  private var onError: ((Error) -> Void)
   
   private var webSocketDelegate: WebSocket?
   private var session: URLSession?
@@ -25,18 +26,18 @@ final class WebSocketConnection {
   private var heartBeat: String?
 
     
-  init(url: URL, topTracks: Data, playerName: String, onMessage: @escaping ((WebSocketResponse) -> Void)) {
+  init(url: URL, topTracks: Data, playerName: String, onMessage: @escaping ((WebSocketResponse) -> Void), onError: @escaping ((Error) -> Void)) {
     self.url = url
     self.topTracks = topTracks
     self.playerName = playerName
     self.onMessage = onMessage
+    self.onError = onError
   }
 
   func connect() {
     webSocketDelegate = WebSocket()
     session = URLSession(configuration: .default, delegate: webSocketDelegate, delegateQueue: OperationQueue())
     task = URLSession.shared.webSocketTask(with: url)
-    task?.resume()
     task?.resume()
     listen()
     try? sendHeartbeat()
@@ -65,6 +66,7 @@ final class WebSocketConnection {
         }
       } catch {
         print("websocket socket closed/error:", error)
+        onError(error)
       }
     }
   }

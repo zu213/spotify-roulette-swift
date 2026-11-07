@@ -34,7 +34,7 @@ struct ConnectView: View {
       .disabled(connectViewModel.isLoading)
     }
     .alert(
-      errorMessage!,
+      errorMessage ?? "NO ERROR FOUND",
       isPresented: Binding(
         get: { errorMessage != nil },
         set: { if !$0 { errorMessage = nil } }
@@ -47,7 +47,7 @@ struct ConnectView: View {
         }
       }
     } message: {
-      Text(errorMessage!)
+      Text(errorMessage ?? "NO ERROR FOUND")
     }
     if(connectViewModel.isLoading) {
       ProgressView()

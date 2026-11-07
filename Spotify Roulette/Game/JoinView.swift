@@ -13,9 +13,12 @@ struct JoinView: View {
   
   let joinTable: (String, Int) async -> Void
   let createTable: (String) async -> Void
+  var isLoadingTable: Bool
   
   @State private var username = ""
   @State private var tableNumber = ""
+  @State var isLoading = false
+  @State var joinErrorMessage: String? = nil
     
   var body: some View {
     VStack {
@@ -31,7 +34,7 @@ struct JoinView: View {
         TextField(
           text: $username,
           prompt: Text("Username")
-            .foregroundStyle(.white)
+            .foregroundStyle(.gray)
         ) {
           Text("Username")
         }
@@ -44,11 +47,13 @@ struct JoinView: View {
         }
         TextField(
           text: $tableNumber,
-          prompt: Text("Table ID")
-            .foregroundStyle(.white)
+          prompt:
+            Text("Table ID")
+            .foregroundStyle(.gray)
         ){
           Text("TableId")
         }
+        .foregroundStyle(.white)
         .font(.system(.headline, design: .rounded))
         .padding(.all, 10)
         .overlay {
@@ -57,19 +62,38 @@ struct JoinView: View {
         }
       }
       Button("Create Game") {
-        guard username != "" else { return }
-        Task { await createTable(username) }
+        if username != "" {
+          Task {
+            isLoading = true
+            defer { isLoading = false }
+            await createTable(username)
+          }
+        } else {
+          joinErrorMessage = "No Username Entered"
+        }
       }
+      .disabled(isLoading || isLoadingTable)
       .foregroundStyle(.black)
       .frame(maxWidth: .infinity, alignment: .center)
       .padding(.all)
       .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
       Button("Join") {
-        if let tn = Int(tableNumber) {
-          Task { await joinTable(username, tn) }
+        if username != "" {
+          if let tn = Int(tableNumber) {
+            Task {
+              isLoading = true
+              defer { isLoading = false }
+              await joinTable(username, tn)
+            }
+          } else {
+            joinErrorMessage = "Invalid Table Code entered"
+          }
+        } else {
+          joinErrorMessage = "No Username Entered"
         }
       }
-      .foregroundStyle(.gray)
+      .disabled(isLoading || isLoadingTable)
+      .foregroundStyle(.white)
       .frame(maxWidth: .infinity, alignment: .center)
       .padding(.all)
       .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))
@@ -81,15 +105,38 @@ struct JoinView: View {
     .frame(maxWidth: 300, alignment: .leading)
     .padding(.all)
     .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 16))
+    .overlay {
+      if(isLoading || isLoadingTable) {
+        ProgressView()
+          .tint(.white)
+          .controlSize(.large)
+      }
+    }
+    .alert(
+      joinErrorMessage ?? "NO ERROR FOUND",
+      isPresented: Binding(
+        get: { joinErrorMessage != nil },
+        set: { if !$0 { joinErrorMessage = nil } }
+      )
+    ) {
+      Button("Dismiss") {
+        Task {
+          joinErrorMessage = nil
+        }
+      }
+    } message: {
+      Text(joinErrorMessage ?? "NO ERROR FOUND")
+    }
   }
-
 }
 
 #Preview {
-  JoinView()
-    { a, b in
+  JoinView(
+    joinTable: { a, b in
       print(a)
-    } createTable: { a in
+    }, createTable: { a in
       print(a)
-    }
+    },
+    isLoadingTable: false
+  )
 }

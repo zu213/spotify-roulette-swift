@@ -56,7 +56,6 @@ struct TableInfoResponse: Decodable {
   let players: [Player]
   var scores: [Score]
   let tableCode: Int
-
 }
 
 struct ShowLeaderboardResponse: Decodable {
@@ -84,8 +83,17 @@ struct Song: Decodable {
   let id: String
   let name: String
   let artists: [Artist]
+  let album: Album
 }
 
 struct Artist: Decodable {
   let name: String
+}
+
+struct Album: Decodable {
+  let images: [SpotifyImages]
+}
+
+struct SpotifyImages: Decodable {
+  let url: URL
 }

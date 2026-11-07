@@ -18,38 +18,59 @@ struct GameView: View {
   @State var isLoading = false
     
   var body: some View {
-    Text("Game")
-    
-    if let roundInfo, let roundStartTime {
-      TimelineView(.periodic(from: roundStartTime, by: 1)) { context in
-        let remaining = max(0, gameDuration - Int(context.date.timeIntervalSince(roundStartTime)))
-        Text("\(remaining)")
-          .font(.largeTitle.monospacedDigit())
-      }
+    VStack {
+      Text("Game")
+        .foregroundStyle(.white)
       
-      HStack {
-        Text("Artist\(roundInfo.song.artists.count > 1 ? "s":""): ")
-        ForEach(roundInfo.song.artists.enumerated(), id: \.element.name) { i, artist in
-          Text("\(artist.name)\(i < roundInfo.song.artists.count - 1 ? ", ": "")")
+      if let roundInfo, let roundStartTime {
+        TimelineView(.periodic(from: roundStartTime, by: 1)) { context in
+          let remaining = max(0, gameDuration - Int(context.date.timeIntervalSince(roundStartTime)))
+          Text("\(remaining)")
+            .font(.largeTitle.monospacedDigit())
+            .foregroundStyle(.white)
         }
-      }
-      Text("Song: \(roundInfo.song.name)")
-      
-      ForEach(players, id: \.id) { player in
-        Button(player.playerName) {
-          Task { await makeGuess(player.id, .now) }
+        
+        HStack {
+          Text("Artist\(roundInfo.song.artists.count > 1 ? "s":""): ")
+            .foregroundStyle(.white)
+          ForEach(roundInfo.song.artists.enumerated(), id: \.element.name) { i, artist in
+            Text("\(artist.name)\(i < roundInfo.song.artists.count - 1 ? ", ": "")")
+              .foregroundStyle(.white)
+          }
         }
+        Text("Song: \(roundInfo.song.name)")
+          .foregroundStyle(.white)
+        
+        //roundInfo.song.
+        
+        ForEach(players, id: \.id) { player in
+          Button(player.playerName) {
+            Task { await makeGuess(player.id, .now) }
+          }
+          .padding(.all)
+          .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
+        }
+      } else {
+        ProgressView()
       }
-      
-    } else {
-      Text("loading")
     }
   }
-  
 }
 
 #Preview {
-  let roundInfo = StartRoundResponse(type: .start_round, song: Song(id: "1", name: "Song 2", artists: [Artist(name: "bob"), Artist(name: "eric")]))
+  let roundInfo = StartRoundResponse(
+    type: .start_round,
+    song: Song(
+      id: "1",
+      name: "Song 2",
+      artists: [Artist(name: "bob"), Artist(name: "eric")],
+      album: Album(
+        images: [
+          SpotifyImages(url: URL(string: "https://i.scdn.co/image/ab67616d0000b2734b1cfe102ed2d9627c6c6802")!)
+        ]
+      )
+    )
+  )
   GameView(
      players: [
        Player(id: "1", playerName: "Zach"),

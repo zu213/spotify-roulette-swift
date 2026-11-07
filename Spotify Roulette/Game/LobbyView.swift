@@ -19,7 +19,7 @@ struct LobbyView: View {
   var body: some View {
     VStack {
       VStack {
-        Text("Table code")
+        Text("Table Code")
           .foregroundStyle(.gray)
         Text(String(tableInfo.tableCode))
           .font(.system(.largeTitle, design: .rounded))

@@ -9,6 +9,11 @@ import Combine
 import Foundation
 import AVFoundation
 
+enum GameError: Error {
+  case ItunesPlayError
+  case WebSocketConnectError
+}
+
 @Observable
 @MainActor
 final class GameViewModel {
@@ -16,7 +21,6 @@ final class GameViewModel {
   private let bridge: Bridge
   
   var isLoading = false
-  var errorMessage: String?
   
   // user related
   var hasTokens: Bool?
@@ -29,6 +33,7 @@ final class GameViewModel {
   // Game related
   var gameInPlay: Bool?
   var gameInfo: StartRoundResponse?
+  var gameErrorMessage: String?
   var roundInPlay: Bool?
   var roundStart: Date?
   var roundAnswer: Player?
@@ -42,6 +47,7 @@ final class GameViewModel {
     self.bridge = bridge
   }
   
+  // Token and track loading
   func loadHasTokens() async {
     isLoading = true
     defer { isLoading = false }
@@ -51,10 +57,14 @@ final class GameViewModel {
   }
   
   func requestTopTracks() async {
-    guard let _ =  hasTokens, topTracks == nil else { return }
+    if hasTokens == nil {
+      await loadHasTokens()
+    }
+    guard topTracks == nil else { return }
     topTracks = await bridge.requestTopTracks()
   }
   
+  // Join functionality
   func createTable(name: String) async {
     await requestTopTracks()
     guard let topTracks else { return }
@@ -62,7 +72,8 @@ final class GameViewModel {
     let url = WEBSOCKET_BASE_URL.appending(queryItems: [
       URLQueryItem(name: "playername", value: name)
     ])
-    webSocketConnection = WebSocketConnection(url: url, topTracks: topTracks, playerName: name, onMessage: decodeMessage)
+    webSocketConnection = WebSocketConnection(url: url, topTracks: topTracks, playerName: name, onMessage: decodeMessage, onError: handleError)
+    isLoading = true
     webSocketConnection?.connect()
   }
   
@@ -74,15 +85,18 @@ final class GameViewModel {
       URLQueryItem(name: "playername", value: name),
       URLQueryItem(name: "tableid", value: String(code))
     ])
-    webSocketConnection = WebSocketConnection(url: url, topTracks: topTracks, playerName: name, onMessage: decodeMessage)
+    webSocketConnection = WebSocketConnection(url: url, topTracks: topTracks, playerName: name, onMessage: decodeMessage, onError: handleError)
+    isLoading = true
     webSocketConnection?.connect()
   }
   
+  // Lobby functionality
   func startGame() async {
     gameInPlay = true
     await startRound()
   }
   
+  // Game functionality
   func startRound() async {
     roundInPlay = true
     webSocketConnection?.startRound()
@@ -98,18 +112,17 @@ final class GameViewModel {
   
   var audioPlayer: AVPlayer?
   
-  func playSong() async {
-    guard let song = gameInfo?.song, let artist = song.artists.first else { return }
-    if let songUrl = try? await bridge.playAudioPreviewFromiTunes(songName: song.name, artistName: artist.name) {
+  func playSong() async throws {
+    guard let song = gameInfo?.song, let artist = song.artists.first else { throw GameError.ItunesPlayError }
+    let songUrl = try await bridge.playAudioPreviewFromiTunes(songName: song.name, artistName: artist.name)
       
-      DispatchQueue.main.async {
-        self.audioPlayer = AVPlayer(url: songUrl)
-        self.audioPlayer?.play()
-      }
+    DispatchQueue.main.async {
+      self.audioPlayer = AVPlayer(url: songUrl)
+      self.audioPlayer!.play()
     }
   }
   
-  func kickPlayerOutOfTable() {
+  func kickPlayerOutOfTable(_ intentional: Bool = false) {
     audioPlayer?.pause()
     audioPlayer = nil
     gameInPlay = nil
@@ -118,18 +131,22 @@ final class GameViewModel {
     roundAnswer = nil
     roundStart = nil
     gameInfo = nil
+    quitIntentional = intentional
     webSocketConnection?.disconnect()
     webSocketConnection = nil
+    tableErrorMessage = nil
+    isLoading = false
   }
   
   func logout() {
-    kickPlayerOutOfTable()
+    kickPlayerOutOfTable(true)
     Task {
       await tokenStore.clear()
       hasTokens = false
     }
   }
 
+  // Websocket decoder
   func decodeMessage(wsr: WebSocketResponse) {
     switch wsr {
     case .startRound(let roundMessage):
@@ -138,10 +155,12 @@ final class GameViewModel {
       roundStart = .now
       Task {
          do {
-           await playSong()
+           try await playSong()
            try await Task.sleep(for: .seconds(30))
            await makeGuess(playerId: nil, timeGuessed: .now)
          } catch {
+           // If playsong or sleep fail ergh idk what to do
+           gameErrorMessage = "Itunes failed to find song"
          }
        }
       break
@@ -156,10 +175,22 @@ final class GameViewModel {
       roundAnswer = leaderboardInfo.answer
       break
     case .noTable(let noTable):
-      kickPlayerOutOfTable()
+      kickPlayerOutOfTable(true)
+      tableErrorMessage = noTable.message
       break
     case .pong:
       break
     }
+  }
+  
+  var quitIntentional = false
+  
+  func handleError(error: Error) {
+    if quitIntentional {
+      quitIntentional = false
+      return
+    }
+    tableErrorMessage = "Failed To Connect To Table"
+    isLoading = false
   }
 }

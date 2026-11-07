@@ -44,6 +44,4 @@ final class ConnectViewModel {
     defer { isLoading = false }
     try? await tokenStore.exchangeCode(code: code, verifier: verifier)
   }
-  
-  
 }

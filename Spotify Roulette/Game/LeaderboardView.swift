@@ -16,22 +16,39 @@ struct LeaderboardView: View {
   @State var isLoading = false
     
   var body: some View {
-    Text("Scores on the doors")
-
-    ForEach(Array(scores.enumerated()), id: \.offset) { i, score in
-      Text("\(score.playerName): \(score.score)")
-    }
-
-    Button("Next round") {
-      isLoading = true
-      defer { isLoading = false }
+    VStack {
+      VStack {
+        Text("Leaderboard")
+          .foregroundStyle(.white)
+          .font(.system(.headline, design: .rounded))
+        
+        ForEach(Array(scores.enumerated()), id: \.offset) { i, score in
+          Divider()
+            .overlay(.white)
+          Text("\(score.playerName): \(score.score)")
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+      }
+      .padding(.all)
+      .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))
+      .frame(maxWidth: .infinity, alignment: .leading)
+      
+      Button("Next round") {
+        isLoading = true
+        defer { isLoading = false }
         Task {
           await startNextRound()
         }
       }
-    .disabled(isLoading)
+      .foregroundStyle(.black)
+      .padding(.all)
+      .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
+      .disabled(isLoading)
+    }
+    .frame(maxWidth: 300, alignment: .leading)
   }
-  
 }
 
 #Preview {
