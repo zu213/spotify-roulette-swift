@@ -25,13 +25,27 @@ struct ConnectView: View {
   var body: some View {
     // Keeping for now incase i move to tab view
     VStack {
-      Text("Connect to Spotify")
-      Button("Connect") {
+      Text("You need to connect the app to spotify to access your top tracks.")
+        .foregroundStyle(.white)
+        .multilineTextAlignment(.center)
+        .padding(.all)
+      Button("Connect To Spotify") {
         Task {
           await connectToSpotify()
         }
       }
-      .disabled(connectViewModel.isLoading)
+      .foregroundStyle(.black)
+      .padding(.all)
+      .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
+      .disabled(isBuildingConnection)
+    }
+    .padding(.all)
+    .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))
+    .overlay {
+      if(isBuildingConnection) {
+        ProgressView()
+          .tint(.white)
+      }
     }
     .alert(
       errorMessage ?? "NO ERROR FOUND",
@@ -49,14 +63,13 @@ struct ConnectView: View {
     } message: {
       Text(errorMessage ?? "NO ERROR FOUND")
     }
-    if(connectViewModel.isLoading) {
-      ProgressView()
-    }
   }
   
   private func connectToSpotify() async {
+    isBuildingConnection = true
     if let url = await connectViewModel.loginToSpotify() {
       do {
+        defer { isBuildingConnection = false }
         let callbackURL = try await webAuthSession.authenticate(
             using: url,
             callbackURLScheme: "com.zachupstone.spotify-roulette"

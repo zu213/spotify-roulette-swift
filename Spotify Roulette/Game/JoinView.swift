@@ -40,11 +40,14 @@ struct JoinView: View {
         }
         .foregroundStyle(.white)
         .font(.system(.headline, design: .rounded))
+        .padding(.horizontal, 6)
         .padding(.all, 10)
         .overlay {
           RoundedRectangle(cornerRadius: 24)
             .stroke(.green, lineWidth: 2)
         }
+        .opacity(isLoading || isLoadingTable ? 0.4 : 1)
+        .disabled(isLoading || isLoadingTable)
         TextField(
           text: $tableNumber,
           prompt:
@@ -55,11 +58,14 @@ struct JoinView: View {
         }
         .foregroundStyle(.white)
         .font(.system(.headline, design: .rounded))
+        .padding(.horizontal, 6)
         .padding(.all, 10)
         .overlay {
           RoundedRectangle(cornerRadius: 24)
             .stroke(.green, lineWidth: 2)
         }
+        .opacity(isLoading || isLoadingTable ? 0.4 : 1)
+        .disabled(isLoading || isLoadingTable)
       }
       Button("Create Game") {
         if username != "" {
@@ -77,7 +83,8 @@ struct JoinView: View {
       .frame(maxWidth: .infinity, alignment: .center)
       .padding(.all)
       .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
-      Button("Join") {
+      .opacity(isLoading || isLoadingTable ? 0.4 : 1)
+      Button {
         if username != "" {
           if let tn = Int(tableNumber) {
             Task {
@@ -91,16 +98,20 @@ struct JoinView: View {
         } else {
           joinErrorMessage = "No Username Entered"
         }
+      } label: {
+        Text("Join")
+          .frame(maxWidth: .infinity)
+          .padding()
       }
       .disabled(isLoading || isLoadingTable)
       .foregroundStyle(.white)
       .frame(maxWidth: .infinity, alignment: .center)
-      .padding(.all)
       .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))
       .overlay {
         RoundedRectangle(cornerRadius: 24)
           .stroke(.green, lineWidth: 2)
       }
+      .opacity(isLoading || isLoadingTable ? 0.4 : 1)
     }
     .frame(maxWidth: 300, alignment: .leading)
     .padding(.all)

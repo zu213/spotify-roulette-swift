@@ -27,7 +27,7 @@ struct GameControllerView: View {
                   if gameViewModel.roundInPlay ?? false {
                     GameView(players: tableInfo.players, makeGuess: gameViewModel.makeGuess, roundInfo: gameViewModel.gameInfo, roundStartTime: gameViewModel.roundStart)
                   } else {
-                    LeaderboardView(scores: tableInfo.scores, startNextRound: gameViewModel.startRound, answer: gameViewModel.roundAnswer?.playerName ?? "UNKNOWN ANSWER")
+                    LeaderboardView(scores: tableInfo.scores, startNextRound: gameViewModel.startRound, answer: gameViewModel.roundAnswer?.playerName ?? "UNKNOWN ANSWER", tableCode: tableInfo.tableCode)
                   }
                 } else {
                   LobbyView(tableInfo: tableInfo, startGame: gameViewModel.startGame)

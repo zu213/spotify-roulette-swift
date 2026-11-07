@@ -15,6 +15,7 @@ struct GameView: View {
   let roundStartTime: Date?
   let gameDuration = 30
   
+  @State var hasGuessed: String? = nil
   @State var isLoading = false
     
   var body: some View {
@@ -69,13 +70,26 @@ struct GameView: View {
         
         //roundInfo.song.
         HStack {
-          ForEach(players, id: \.id) { player in
-            Button(player.playerName) {
-              Task { await makeGuess(player.id, .now) }
+          if hasGuessed == nil {
+            ForEach(players, id: \.id) { player in
+              Button(player.playerName) {
+                hasGuessed = player.playerName
+                Task {
+                  await makeGuess(player.id, .now)
+                }
+              }
+              .disabled(hasGuessed != nil)
+              .foregroundStyle(.white)
+              .padding(.all)
+              .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
             }
-            .foregroundStyle(.white)
-            .padding(.all)
-            .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
+          } else {
+            Text("You Guessed:")
+              .foregroundStyle(.white)
+              .font(.system(size: 18))
+            Text(hasGuessed!)
+              .foregroundStyle(.green)
+              .font(.system(size: 18))
           }
         }
         .padding(.top, 5)

@@ -48,6 +48,10 @@ struct LobbyView: View {
       .padding(.all)
       .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))
       .frame(maxWidth: .infinity, alignment: .leading)
+      .overlay {
+        RoundedRectangle(cornerRadius: 24)
+          .stroke(.white, lineWidth: 0.5)
+      }
       
       Button("Start Game") {
         Task {
