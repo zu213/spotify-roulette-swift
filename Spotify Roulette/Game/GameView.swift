@@ -41,10 +41,12 @@ struct GameView: View {
             .frame(width: 200, height: 200)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .opacity(remaining < 20 ? 1 : 0)
+            .animation(.easeIn(duration: 1), value: remaining < 20)
             .overlay {
               RoundedRectangle(cornerRadius: 12)
                 .stroke(.green, style: StrokeStyle(lineWidth: 2, dash: [8, 6]))
                 .opacity(remaining >= 20 ? 1 : 0)
+                .animation(.easeOut(duration: 1), value: remaining < 20)
             }
             .padding(.bottom, 5)
           }
@@ -54,7 +56,7 @@ struct GameView: View {
               .foregroundStyle(.white)
             ForEach(roundInfo.song.artists.enumerated(), id: \.element.name) { i, artist in
               Text("\(artist.name)\(i < roundInfo.song.artists.count - 1 ? ",": "")")
-                .foregroundStyle(remaining < 15 ? .white : .clear)
+                .foregroundStyle(remaining < 15 ? .green : .clear)
             }
           }
           .padding(.all, 7)
@@ -63,36 +65,38 @@ struct GameView: View {
             Text("Song:")
               .foregroundStyle(.white)
             Text("\(roundInfo.song.name)")
-              .foregroundStyle(remaining < 5 ? .white : .clear)
+              .foregroundStyle(remaining < 5 ? .green : .clear)
           }
           .padding(.all, 7)
         }
         
-        //roundInfo.song.
-        HStack {
-          if hasGuessed == nil {
+        if let hasGuessed {
+          HStack {
+            Text("You Guessed:")
+              .foregroundStyle(.white)
+            Text(hasGuessed)
+              .foregroundStyle(.green)
+          }
+          .font(.system(size: 18))
+          .padding(.top, 5)
+        } else {
+          HStack {
             ForEach(players, id: \.id) { player in
-              Button(player.playerName) {
+              Button {
                 hasGuessed = player.playerName
                 Task {
                   await makeGuess(player.id, .now)
                 }
+              } label: {
+                Text(player.playerName)
+                  .padding()
               }
-              .disabled(hasGuessed != nil)
-              .foregroundStyle(.white)
-              .padding(.all)
+              .foregroundStyle(.black)
               .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
             }
-          } else {
-            Text("You Guessed:")
-              .foregroundStyle(.white)
-              .font(.system(size: 18))
-            Text(hasGuessed!)
-              .foregroundStyle(.green)
-              .font(.system(size: 18))
           }
+          .padding(.top, 5)
         }
-        .padding(.top, 5)
 
       } else {
         ProgressView()

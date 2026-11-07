@@ -29,15 +29,18 @@ struct ConnectView: View {
         .foregroundStyle(.white)
         .multilineTextAlignment(.center)
         .padding(.all)
-      Button("Connect To Spotify") {
+      Button {
         Task {
           await connectToSpotify()
         }
+      } label: {
+        Text("Connect To Spotify")
+          .padding()
       }
       .foregroundStyle(.black)
-      .padding(.all)
       .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
       .disabled(isBuildingConnection)
+      .opacity(isBuildingConnection ? 0.4 : 1)
     }
     .padding(.all)
     .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))

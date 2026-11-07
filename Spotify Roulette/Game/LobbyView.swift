@@ -17,7 +17,7 @@ struct LobbyView: View {
   @State var isLoading = false
       
   var body: some View {
-    VStack {
+    VStack(spacing: 16) {
       VStack {
         Text("Table Code")
           .foregroundStyle(.gray)
@@ -53,17 +53,21 @@ struct LobbyView: View {
           .stroke(.white, lineWidth: 0.5)
       }
       
-      Button("Start Game") {
+      Button {
         Task {
           isLoading = true
           defer { isLoading = false }
           await startGame()
         }
+      } label: {
+        Text("Start Game")
+          .frame(maxWidth: .infinity)
+          .padding()
       }
       .foregroundStyle(.black)
-      .padding(.all)
       .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
       .disabled(isLoading)
+      .opacity(isLoading ? 0.4 : 1)
     }
     .frame(maxWidth: 300, alignment: .leading)
   }

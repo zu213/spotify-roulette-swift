@@ -17,7 +17,7 @@ struct LeaderboardView: View {
   @State var isLoading = false
     
   var body: some View {
-    VStack {
+    VStack(spacing: 16) {
       VStack {
         Text("Table Code")
           .foregroundStyle(.gray)
@@ -48,10 +48,14 @@ struct LeaderboardView: View {
         ForEach(Array(scores.enumerated()), id: \.offset) { i, score in
           Divider()
             .overlay(.white)
-          Text("\(score.playerName): \(score.score)")
-            .foregroundStyle(.white)
-            .multilineTextAlignment(.leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
+          HStack {
+            Text(score.playerName)
+            Spacer()
+            Text(String(score.score))
+              .monospacedDigit()
+              .foregroundStyle(.green)
+          }
+          .foregroundStyle(.white)
         }
       }
       .padding(.all)
@@ -61,19 +65,22 @@ struct LeaderboardView: View {
         RoundedRectangle(cornerRadius: 24)
           .stroke(.white, lineWidth: 0.5)
       }
-      .padding(.all, 4)
-      
-      Button("Next round") {
-        isLoading = true
-        defer { isLoading = false }
+
+      Button {
         Task {
+          isLoading = true
+          defer { isLoading = false }
           await startNextRound()
         }
+      } label: {
+        Text("Next Round")
+          .frame(maxWidth: .infinity)
+          .padding()
       }
       .foregroundStyle(.black)
-      .padding(.all)
       .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
       .disabled(isLoading)
+      .opacity(isLoading ? 0.4 : 1)
     }
     .frame(maxWidth: 300, alignment: .leading)
   }
