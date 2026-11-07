@@ -99,11 +99,14 @@ final class GameViewModel {
   // Game functionality
   func startRound() async {
     roundInPlay = true
+    gameInfo = nil
+    roundStart = nil
     webSocketConnection?.startRound()
   }
   
   func makeGuess(playerId: String?, timeGuessed: Date) async {
     guard let roundStart else { return }
+    roundSongTask?.cancel()
     let timeLeft = max(30 - Int(timeGuessed.timeIntervalSince(roundStart).rounded()), 0)
     webSocketConnection?.makeGuess(playerId: playerId, timeLeft: timeLeft)
     audioPlayer?.pause()
@@ -131,6 +134,8 @@ final class GameViewModel {
     roundAnswer = nil
     roundStart = nil
     gameInfo = nil
+    roundSongTask?.cancel()
+    roundSongTask = nil
     quitIntentional = intentional
     webSocketConnection?.disconnect()
     webSocketConnection = nil
@@ -146,6 +151,8 @@ final class GameViewModel {
     }
   }
 
+  var roundSongTask: Task<Void, Never>? = nil
+  
   // Websocket decoder
   func decodeMessage(wsr: WebSocketResponse) {
     switch wsr {
@@ -154,11 +161,12 @@ final class GameViewModel {
       gameInPlay = true
       roundInPlay = true
       roundStart = .now
-      Task {
+      roundSongTask = Task {
          do {
            try await playSong()
            try await Task.sleep(for: .seconds(30))
            await makeGuess(playerId: nil, timeGuessed: .now)
+         } catch is CancellationError {
          } catch {
            // If playsong or sleep fail ergh idk what to do
            gameErrorMessage = "Itunes failed to find song"
