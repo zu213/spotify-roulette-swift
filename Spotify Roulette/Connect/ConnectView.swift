@@ -13,6 +13,7 @@ struct ConnectView: View {
 
   @State private var connectViewModel: ConnectViewModel
   @State var isBuildingConnection = false
+  @State private var errorMessage: String? = nil
   
   private var loadHasTokens: () async -> Void
   
@@ -27,27 +28,46 @@ struct ConnectView: View {
       Text("Connect to Spotify")
       Button("Connect") {
         Task {
-          if let url = await connectViewModel.loginToSpotify() {
-            do {
-              let callbackURL = try await webAuthSession.authenticate(
-                  using: url,
-                  callbackURLScheme: "com.zachupstone.spotify-roulette"
-              )
-              await connectViewModel.handleSpotifyLoginCallback(url: callbackURL)
-              await loadHasTokens()
-            } catch {
-              
-            }
-          }
+          await connectToSpotify()
         }
       }
       .disabled(connectViewModel.isLoading)
+    }
+    .alert(
+      errorMessage!,
+      isPresented: Binding(
+        get: { errorMessage != nil },
+        set: { if !$0 { errorMessage = nil } }
+      )
+    ) {
+      Button("Retry") {
+        Task {
+          await connectToSpotify()
+          errorMessage = nil
+        }
+      }
+    } message: {
+      Text(errorMessage!)
     }
     if(connectViewModel.isLoading) {
       ProgressView()
     }
   }
   
+  private func connectToSpotify() async {
+    if let url = await connectViewModel.loginToSpotify() {
+      do {
+        let callbackURL = try await webAuthSession.authenticate(
+            using: url,
+            callbackURLScheme: "com.zachupstone.spotify-roulette"
+        )
+        await connectViewModel.handleSpotifyLoginCallback(url: callbackURL)
+        await loadHasTokens()
+      } catch let error {
+        errorMessage = error.localizedDescription
+      }
+    }
+  }
 }
 
 #Preview {

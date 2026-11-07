@@ -26,7 +26,14 @@ struct GameView: View {
         Text("\(remaining)")
           .font(.largeTitle.monospacedDigit())
       }
-      Text("song: \(roundInfo.song)")
+      
+      HStack {
+        Text("Artist\(roundInfo.song.artists.count > 1 ? "s":""): ")
+        ForEach(roundInfo.song.artists.enumerated(), id: \.element.name) { i, artist in
+          Text("\(artist.name)\(i < roundInfo.song.artists.count - 1 ? ", ": "")")
+        }
+      }
+      Text("Song: \(roundInfo.song.name)")
       
       ForEach(players, id: \.id) { player in
         Button(player.playerName) {
@@ -42,5 +49,18 @@ struct GameView: View {
 }
 
 #Preview {
-  //JoinView()
+  let roundInfo = StartRoundResponse(type: .start_round, song: Song(id: "1", name: "Song 2", artists: [Artist(name: "bob"), Artist(name: "eric")]))
+  GameView(
+     players: [
+       Player(id: "1", playerName: "Zach"),
+       Player(id: "2", playerName: "Sam"),
+       Player(id: "3", playerName: "Alex")
+     ],
+     makeGuess: { guess, time in
+       print("Guessed \(guess) at \(time)")
+     },
+     roundInfo: roundInfo,
+     roundStartTime: .now,
+     isLoading: false
+   )
 }

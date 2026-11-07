@@ -35,5 +35,12 @@ struct LeaderboardView: View {
 }
 
 #Preview {
-  //JoinView()
+  LeaderboardView(
+    scores: [
+      Score(playerName: "Geraldine", score: 5),
+      Score(playerName: "Derek", score: 4)
+    ],
+    startNextRound: {},
+    answer: "Geraldine"
+  )
 }

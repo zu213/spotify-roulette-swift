@@ -30,15 +30,7 @@ nonisolated struct Bridge {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw ApiRequestError.non200("aa") }
-        print(response)
         
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
-        print(String(data: data, encoding: .utf8)!)
-        
-        //let decodedResponse = try decoder.decode(TopTracks.self, from: data)
-
         return data
       }
     } catch let error {

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct GameControllerView: View {
-  //let connectViewModel: ConnectViewModel
   @Environment(\.deps) private var deps
   
   @State private var gameViewModel: GameViewModel
@@ -32,7 +31,7 @@ struct GameControllerView: View {
               if gameViewModel.roundInPlay ?? false {
                 GameView(players: tableInfo.players, makeGuess: gameViewModel.makeGuess, roundInfo: gameViewModel.gameInfo, roundStartTime: gameViewModel.roundStart)
               } else {
-                LeaderboardView(scores: tableInfo.scores, startNextRound: gameViewModel.startRound, answer: gameViewModel.answer?.playerName ?? "No ANSWER")
+                LeaderboardView(scores: tableInfo.scores, startNextRound: gameViewModel.startRound, answer: gameViewModel.roundAnswer?.playerName ?? "UNKNOWN ANSWER")
               }
             } else {
               LobbyView(tableInfo: tableInfo, startGame: gameViewModel.startGame)
@@ -50,11 +49,9 @@ struct GameControllerView: View {
     }
     .task { await gameViewModel.loadHasTokens() }
   }
-  
 }
 
 #Preview {
-  //let viewModel = ConnectViewModel(repo: repo)
   let tokenStore = TokenStore()
   let bridge = Bridge(tokenStore: tokenStore)
   GameControllerView(tokenStore: tokenStore, bridge: bridge)

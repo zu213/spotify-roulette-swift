@@ -67,6 +67,7 @@ struct ShowLeaderboardResponse: Decodable {
 
 struct NoTableResponse: Decodable {
   let type: WebSocketResponseType
+  let message: String
 }
 
 struct Player: Decodable {

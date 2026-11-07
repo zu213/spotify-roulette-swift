@@ -14,7 +14,11 @@ struct ContentView: View {
 
   var body: some View {
     // Keeping for now incase i move to tab view
-    GameControllerView(tokenStore: deps.tokenStore, bridge: deps.bridge)
+    ZStack {
+      GameControllerView(tokenStore: deps.tokenStore, bridge: deps.bridge)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.black)
+    }
   }
 }
 

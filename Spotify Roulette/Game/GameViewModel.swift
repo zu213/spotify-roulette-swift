@@ -24,13 +24,14 @@ final class GameViewModel {
   
   // Table related
   var tableInfo: TableInfoResponse?
-  var answer: Player?
+  var tableErrorMessage: String?
   
   // Game related
   var gameInPlay: Bool?
   var gameInfo: StartRoundResponse?
   var roundInPlay: Bool?
   var roundStart: Date?
+  var roundAnswer: Player?
   
   // Websocket
   var webSocketConnection: WebSocketConnection?
@@ -114,7 +115,7 @@ final class GameViewModel {
     gameInPlay = nil
     roundInPlay = nil
     tableInfo = nil
-    answer = nil
+    roundAnswer = nil
     roundStart = nil
     gameInfo = nil
     webSocketConnection?.disconnect()
@@ -144,7 +145,6 @@ final class GameViewModel {
          }
        }
       break
-      // handle
     case .tableInfo(let tableInfo):
       print(tableInfo)
       self.tableInfo = tableInfo
@@ -153,7 +153,7 @@ final class GameViewModel {
     case .showLeaderboard(let leaderboardInfo):
       roundInPlay = false
       tableInfo?.scores = leaderboardInfo.scores
-      answer = leaderboardInfo.answer
+      roundAnswer = leaderboardInfo.answer
       break
     case .noTable(let noTable):
       kickPlayerOutOfTable()
@@ -162,6 +162,4 @@ final class GameViewModel {
       break
     }
   }
-  
-  
 }
