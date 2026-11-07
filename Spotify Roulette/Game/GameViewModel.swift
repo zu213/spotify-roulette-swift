@@ -151,6 +151,7 @@ final class GameViewModel {
     switch wsr {
     case .startRound(let roundMessage):
       gameInfo = roundMessage
+      gameInPlay = true
       roundInPlay = true
       roundStart = .now
       Task {
@@ -167,7 +168,6 @@ final class GameViewModel {
     case .tableInfo(let tableInfo):
       print(tableInfo)
       self.tableInfo = tableInfo
-      
       break
     case .showLeaderboard(let leaderboardInfo):
       roundInPlay = false

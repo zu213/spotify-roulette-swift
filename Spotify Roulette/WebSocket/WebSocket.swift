@@ -113,7 +113,9 @@ final class WebSocketConnection {
     let json = String(decoding: data, as: UTF8.self)
 
     task.send(.string(json)) { error in
-      if let error { print("ws send failed:", error) }
+      if let error {
+        print("ws send failed:", error)
+      }
     }
   }
   

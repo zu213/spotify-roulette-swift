@@ -19,7 +19,7 @@ struct GameView: View {
     
   var body: some View {
     VStack {
-      Text("Game")
+      Text("Time Remaining")
         .foregroundStyle(.white)
       
       if let roundInfo, let roundStartTime {
@@ -28,32 +28,65 @@ struct GameView: View {
           Text("\(remaining)")
             .font(.largeTitle.monospacedDigit())
             .foregroundStyle(.white)
-        }
-        
-        HStack {
-          Text("Artist\(roundInfo.song.artists.count > 1 ? "s":""): ")
-            .foregroundStyle(.white)
-          ForEach(roundInfo.song.artists.enumerated(), id: \.element.name) { i, artist in
-            Text("\(artist.name)\(i < roundInfo.song.artists.count - 1 ? ", ": "")")
-              .foregroundStyle(.white)
+          
+          if let albumCover = roundInfo.song.album.images.first {
+            AsyncImage(url: albumCover.url) { image in
+              image
+                .resizable()
+                .scaledToFill()
+            } placeholder: {
+              ProgressView().tint(.white)
+            }
+            .frame(width: 200, height: 200)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .opacity(remaining < 20 ? 1 : 0)
+            .overlay {
+              RoundedRectangle(cornerRadius: 12)
+                .stroke(.green, style: StrokeStyle(lineWidth: 2, dash: [8, 6]))
+                .opacity(remaining >= 20 ? 1 : 0)
+            }
+            .padding(.bottom, 5)
           }
+          
+          HStack {
+            Text("Artist\(roundInfo.song.artists.count > 1 ? "s":""):")
+              .foregroundStyle(.white)
+            ForEach(roundInfo.song.artists.enumerated(), id: \.element.name) { i, artist in
+              Text("\(artist.name)\(i < roundInfo.song.artists.count - 1 ? ",": "")")
+                .foregroundStyle(remaining < 15 ? .white : .clear)
+            }
+          }
+          .padding(.all, 7)
+          
+          HStack {
+            Text("Song:")
+              .foregroundStyle(.white)
+            Text("\(roundInfo.song.name)")
+              .foregroundStyle(remaining < 5 ? .white : .clear)
+          }
+          .padding(.all, 7)
         }
-        Text("Song: \(roundInfo.song.name)")
-          .foregroundStyle(.white)
         
         //roundInfo.song.
-        
-        ForEach(players, id: \.id) { player in
-          Button(player.playerName) {
-            Task { await makeGuess(player.id, .now) }
+        HStack {
+          ForEach(players, id: \.id) { player in
+            Button(player.playerName) {
+              Task { await makeGuess(player.id, .now) }
+            }
+            .foregroundStyle(.white)
+            .padding(.all)
+            .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
           }
-          .padding(.all)
-          .background(.green.opacity(1), in: RoundedRectangle(cornerRadius: 24))
         }
+        .padding(.top, 5)
+
       } else {
         ProgressView()
       }
     }
+    .padding(.all)
+    .frame(maxWidth: 300, alignment: .center)
+    .background(.black.opacity(1), in: RoundedRectangle(cornerRadius: 24))
   }
 }
 
