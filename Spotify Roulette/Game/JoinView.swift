@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct JoinView: View {
   //let connectViewModel: ConnectViewModel
@@ -56,6 +57,7 @@ struct JoinView: View {
         ){
           Text("TableId")
         }
+        .onReceive(Just(tableNumber)) { _ in limitText(3) }
         .foregroundStyle(.white)
         .font(.system(.headline, design: .rounded))
         .padding(.horizontal, 6)
@@ -139,6 +141,12 @@ struct JoinView: View {
       Text(joinErrorMessage ?? "NO ERROR FOUND")
     }
   }
+  
+  func limitText(_ upper: Int) {
+     if tableNumber.count > upper {
+       tableNumber = String(tableNumber.prefix(upper))
+     }
+   }
 }
 
 #Preview {
