@@ -57,9 +57,11 @@ struct JoinView: View {
         ){
           Text("TableId")
         }
+        .frame(width: 120)
+        .multilineTextAlignment(.center)
         .onReceive(Just(tableNumber)) { _ in limitText(3) }
         .foregroundStyle(.white)
-        .font(.system(.headline, design: .rounded))
+        .font(.system(.largeTitle, design: .rounded))
         .padding(.horizontal, 6)
         .padding(.all, 10)
         .overlay {
